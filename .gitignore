@@ -1,7 +1,3 @@
-file.txt
-output.bin
-restored_file.txt
-mycompressor.exe
-mydecompressor.exe
-
+*.txt
+*.bin
 *.exe

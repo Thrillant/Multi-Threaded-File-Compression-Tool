@@ -33,7 +33,7 @@ struct Compare
     bool operator()(const shared_ptr<Node> &l, const shared_ptr<Node> &r)
     {
         // If frequencies are identical, break the tie alphabetically!
-        if(l->freq == r->freq)
+        if (l->freq == r->freq)
         {
             return l->min_char > r->min_char;
         }
@@ -45,7 +45,7 @@ struct Compare
 int main(int argc, char *argv[])
 {
     // Ensure the user provided the compressed file and output file names
-    if(argc != 3)
+    if (argc != 3)
     {
         cerr << "Usage: " << argv[0] << " <compressed_file.bin> <output_restored.txt>\n";
         return 1;
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     string outputFilename = argv[2];
 
     ifstream inFile(inputFilename, ios::binary);
-    if(!inFile)
+    if (!inFile)
     {
         cerr << "Error: Could not open compressed file.\n";
         return 1;
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     inFile.read(reinterpret_cast<char *>(&mapSize), sizeof(mapSize));
 
     unordered_map<char, size_t> freqMap;
-    for(size_t i = 0; i < mapSize; ++i)
+    for (size_t i = 0; i < mapSize; ++i)
     {
         char c;
         size_t freq;
@@ -81,19 +81,19 @@ int main(int argc, char *argv[])
     // --- STEP 2: REBUILD THE HUFFMAN TREE ---
     priority_queue<shared_ptr<Node>, vector<shared_ptr<Node>>, Compare> pq;
 
-    for(auto pair : freqMap)
+    for (auto pair : freqMap)
     {
         pq.push(make_shared<Node>(pair.first, pair.second));
     }
 
     // Handle edge case of an empty file or a file with only 1 unique character
-    if(pq.empty())
+    if (pq.empty())
     {
         ofstream emptyFile(outputFilename);
         return 0;
     }
 
-    while(pq.size() > 1)
+    while (pq.size() > 1)
     {
         auto left = pq.top();
         pq.pop();
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 
     // --- STEP 3: READ BITS AND DECOMPRESS ---
     ofstream outFile(outputFilename, ios::binary);
-    if(!outFile)
+    if (!outFile)
     {
         cerr << "Error: Could not create output file.\n";
         return 1;
@@ -118,15 +118,15 @@ int main(int argc, char *argv[])
     streamsize decodedChars = 0;
 
     // Read byte by byte from the compressed data section
-    while(inFile.get(byte) && decodedChars < originalFileSize)
+    while (inFile.get(byte) && decodedChars < originalFileSize)
     {
         // Read bit by bit from left to right (MSB to LSB)
-        for(int i = 7; i >= 0; --i)
+        for (int i = 7; i >= 0; --i)
         {
             // Extract the i-th bit
             bool bit = (byte >> i) & 1;
 
-            if(bit == 0)
+            if (bit == 0)
             {
                 curr = curr->left;
             }
@@ -136,14 +136,14 @@ int main(int argc, char *argv[])
             }
 
             // If we hit a leaf node, we found a character
-            if(!curr->left && !curr->right)
+            if (!curr->left && !curr->right)
             {
                 outFile.put(curr->data);
                 decodedChars++;
                 curr = root; // Reset to top of tree fornext character
 
                 // Stop exactly when we've restored all original characters, ignoring any padding bits at the end of the final byte.
-                if(decodedChars == originalFileSize)
+                if (decodedChars == originalFileSize)
                 {
                     break;
                 }

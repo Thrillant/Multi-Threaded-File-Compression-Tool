@@ -33,7 +33,7 @@ struct Compare
     bool operator()(const shared_ptr<Node> &l, const shared_ptr<Node> &r)
     {
         // If frequencies are identical, break the tie alphabetically!
-        if(l->freq == r->freq)
+        if (l->freq == r->freq)
         {
             return l->min_char > r->min_char;
         }
@@ -45,10 +45,11 @@ struct Compare
 // 2. Recursive function to generate Prefix Codes
 void generateCodes(const shared_ptr<Node> &root, const string &code, unordered_map<char, string> &huffmanCodes)
 {
-    if(!root) return;
+    if (!root)
+        return;
 
     // If it's a leaf node, it contains a character
-    if(!root->left && !root->right)
+    if (!root->left && !root->right)
     {
         huffmanCodes[root->data] = code;
     }
@@ -60,7 +61,7 @@ void generateCodes(const shared_ptr<Node> &root, const string &code, unordered_m
 int main(int argc, char *argv[])
 {
     // Ensure the user provided an input file and an output file name
-    if(argc != 3)
+    if (argc != 3)
     {
         cerr << "Usage: " << argv[0] << " <input_file> <output_file.bin>\n";
         return 1;
@@ -72,7 +73,7 @@ int main(int argc, char *argv[])
     // --- STEP 1: READ THE FILE INTO MEMORY ---
     // Open in binary mode and seek to the end (ate) to get file size immediately
     ifstream inFile(inputFilename, ios::binary | ios::ate);
-    if(!inFile)
+    if (!inFile)
     {
         cerr << "Error: Could not open input file.\n";
         return 1;
@@ -82,7 +83,7 @@ int main(int argc, char *argv[])
     inFile.seekg(0, ios::beg);
 
     vector<char> buffer(fileSize);
-    if(!inFile.read(buffer.data(), fileSize))
+    if (!inFile.read(buffer.data(), fileSize))
     {
         cerr << "Error: Could not read file data.\n";
         return 1;
@@ -91,7 +92,7 @@ int main(int argc, char *argv[])
 
     // --- STEP 2: FREQUENCY ANALYSIS ---
     unordered_map<char, size_t> freqMap;
-    for(char c : buffer)
+    for (char c : buffer)
     {
         freqMap[c]++;
     }
@@ -99,12 +100,12 @@ int main(int argc, char *argv[])
     // --- STEP 3: BUILD THE HUFFMAN TREE ---
     priority_queue<shared_ptr<Node>, vector<shared_ptr<Node>>, Compare> pq;
 
-    for(auto pair : freqMap)
+    for (auto pair : freqMap)
     {
         pq.push(make_shared<Node>(pair.first, pair.second));
     }
 
-    while(pq.size() > 1)
+    while (pq.size() > 1)
     {
         auto left = pq.top();
         pq.pop();
@@ -134,7 +135,7 @@ int main(int argc, char *argv[])
     // Write Header: Frequency map size and data (so decompressor can rebuild tree)
     size_t mapSize = freqMap.size();
     outFile.write(reinterpret_cast<const char *>(&mapSize), sizeof(mapSize));
-    for(auto pair : freqMap)
+    for (auto pair : freqMap)
     {
         outFile.write(&pair.first, sizeof(pair.first));
         outFile.write(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
@@ -144,10 +145,10 @@ int main(int argc, char *argv[])
     unsigned char bitBuffer = 0;
     int bitCount = 0;
 
-    for(char c : buffer)
+    for (char c : buffer)
     {
         string code = huffmanCodes[c];
-        for(char bit : code)
+        for (char bit : code)
         {
             bitBuffer <<= 1; // Shift bits left
             if (bit == '1')
@@ -166,7 +167,7 @@ int main(int argc, char *argv[])
     }
 
     // Pad remaining bits if the file didn't end perfectly on an 8-bit boundary
-    if(bitCount > 0)
+    if (bitCount > 0)
     {
         bitBuffer <<= (8 - bitCount);
         outFile.put(bitBuffer);
