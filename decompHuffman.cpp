@@ -4,6 +4,7 @@
 #include <queue>
 #include <unordered_map>
 #include <memory>
+#include <chrono>
 
 using namespace std;
 
@@ -50,6 +51,8 @@ int main(int argc, char *argv[])
         cerr << "Usage: " << argv[0] << " <compressed_file.bin> <output_restored.txt>\n";
         return 1;
     }
+
+    auto startTime = chrono::high_resolution_clock::now();
 
     string inputFilename = argv[1];
     string outputFilename = argv[2];
@@ -154,8 +157,12 @@ int main(int argc, char *argv[])
     inFile.close();
     outFile.close();
 
+    auto stopTime = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(stopTime - startTime);
+
     cout << "Successfully decompressed " << inputFilename << " to " << outputFilename << "\n";
     cout << "Restored Size: " << decodedChars << " bytes.\n";
+    cout << "Total Decompression Time: " << duration.count() / 1000.0 << " seconds.\n";
 
     return 0;
 }

@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <memory>
 #include <string>
+#include <chrono>
 
 using namespace std;
 // 1. Node Structure
@@ -66,6 +67,7 @@ int main(int argc, char *argv[])
         cerr << "Usage: " << argv[0] << " <input_file> <output_file.bin>\n";
         return 1;
     }
+    auto startTime = chrono::high_resolution_clock::now();
 
     string inputFilename = argv[1];
     string outputFilename = argv[2];
@@ -176,6 +178,10 @@ int main(int argc, char *argv[])
     outFile.close();
     cout << "Successfully compressed " << inputFilename << " to " << outputFilename << "\n";
     cout << "Original Size: " << fileSize << " bytes.\n";
+
+    auto stopTime = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(stopTime - startTime);
+    cout << "Total Execution Time: " << duration.count() / 1000.0 << " seconds.\n";
 
     return 0;
 }
